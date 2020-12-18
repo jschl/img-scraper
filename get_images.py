@@ -7,6 +7,7 @@ from selenium.webdriver.firefox.options import Options
 import requests
 
 def get_images(search_term, limit, export_folder, headless=False):
+    ledger = {}
     options = Options()
     if headless == True:
         options.headless = True
@@ -15,7 +16,6 @@ def get_images(search_term, limit, export_folder, headless=False):
 
     browser = webdriver.Firefox(options=options, executable_path=r'geckodriver/geckodriver')
     base_url = f"https://www.google.com/search?site=&tbm=isch&source=hp&biw=1873&bih=990&q={search_term}"
-    target_urls = []
 
     # go to url
     browser.get(base_url)
@@ -40,20 +40,26 @@ def get_images(search_term, limit, export_folder, headless=False):
             else:
                big_img = element[1].find_element_by_class_name('n3VNCb')
 
-            target_urls.append(big_img.get_attribute("src"))
-
             # retrieve and save image
             try:
-                reponse = requests.get(target_urls[cnt])
+                src = big_img.get_attribute("src")
+                reponse = requests.get(src)
             except:
                 continue
 
             if reponse.status_code == 200:
-                os.makedirs(export_folder, exist_ok=True)
-                export_path = os.path.join(export_folder, f"{search_term}{cnt}.jpg") 
+                os.makedirs(os.path.join(export_folder + search_term), exist_ok=True)
+                export_path = os.path.join(export_folder, search_term,  f"{search_term}{cnt}.jpg") 
                 with open(export_path,"wb") as file:
                     file.write(reponse.content)
 
-    return target_urls
+                ledger[src] = export_path
+        else:
+            break
 
-items = get_images('codiaeum petra', 2, '/opt/pjs/data/', headless=True)
+        with open(os.path.join(export_folder, 'ledger.json'), 'w') as outfile:
+            json.dump(ledger, outfile)
+
+    return f'saved {len(ledger)} images to {export_folder}'
+
+items = get_images('codiaeum petra', 3, '/opt/pjs/data/train/', headless=True)
