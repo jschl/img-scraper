@@ -12,11 +12,16 @@ def get_images(search_term, limit, export_folder, headless=False):
 
     # go to url
     browser.get(base_url)
+
+    #for _ in range(5):
+    #    browser.execute_script("window.scrollBy(0,10000)")
+
     # find all images
     elements = browser.find_elements_by_class_name('rg_i')
 
     for cnt, e in enumerate(elements, start=0):
-        if cnt > limit:
+        print(cnt, limit, cnt > limit)
+        if cnt < limit:
             # click image
             e.click()
             # content reload
@@ -34,10 +39,11 @@ def get_images(search_term, limit, export_folder, headless=False):
             # retrieve and save image
             reponse = requests.get(target_urls[cnt])
             if reponse.status_code == 200:
+                os.makedirs(export_folder, exist_ok=True)
                 export_path = os.path.join(export_folder, f"{search_term}{cnt}.jpg") 
                 with open(export_path,"wb") as file:
                     file.write(reponse.content)
 
-    return images_url
+    return target_urls
 
-items = get_images('dieffenbachia', 10, '/opt/pjs/')
+items = get_images('dieffenbachia', 10, '/opt/pjs/data/')
