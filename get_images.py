@@ -13,8 +13,8 @@ def get_images(search_term, limit, export_folder, headless=False):
     # go to url
     browser.get(base_url)
 
-    #for _ in range(5):
-    #    browser.execute_script("window.scrollBy(0,10000)")
+    for _ in range(5):
+        browser.execute_script("window.scrollBy(0,10000)")
 
     # find all images
     elements = browser.find_elements_by_class_name('rg_i')
@@ -37,7 +37,11 @@ def get_images(search_term, limit, export_folder, headless=False):
             target_urls.append(big_img.get_attribute("src"))
 
             # retrieve and save image
-            reponse = requests.get(target_urls[cnt])
+            try:
+                reponse = requests.get(target_urls[cnt])
+            except:
+                continue
+
             if reponse.status_code == 200:
                 os.makedirs(export_folder, exist_ok=True)
                 export_path = os.path.join(export_folder, f"{search_term}{cnt}.jpg") 
@@ -46,4 +50,4 @@ def get_images(search_term, limit, export_folder, headless=False):
 
     return target_urls
 
-items = get_images('dieffenbachia', 10, '/opt/pjs/data/')
+items = get_images('codiaeum petra', 20, '/opt/pjs/data/')
