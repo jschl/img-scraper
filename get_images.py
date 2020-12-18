@@ -3,10 +3,17 @@ import os
 import json
 
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 import requests
 
 def get_images(search_term, limit, export_folder, headless=False):
-    browser = webdriver.Firefox(executable_path=r'geckodriver/geckodriver')
+    options = Options()
+    if headless == True:
+        options.headless = True
+    else:
+        options.headless = False
+
+    browser = webdriver.Firefox(options=options, executable_path=r'geckodriver/geckodriver')
     base_url = f"https://www.google.com/search?site=&tbm=isch&source=hp&biw=1873&bih=990&q={search_term}"
     target_urls = []
 
@@ -20,7 +27,6 @@ def get_images(search_term, limit, export_folder, headless=False):
     elements = browser.find_elements_by_class_name('rg_i')
 
     for cnt, e in enumerate(elements, start=0):
-        print(cnt, limit, cnt > limit)
         if cnt < limit:
             # click image
             e.click()
@@ -50,4 +56,4 @@ def get_images(search_term, limit, export_folder, headless=False):
 
     return target_urls
 
-items = get_images('codiaeum petra', 20, '/opt/pjs/data/')
+items = get_images('codiaeum petra', 2, '/opt/pjs/data/', headless=True)
