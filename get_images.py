@@ -61,7 +61,7 @@ def get_images(search_term, limit, export_folder, headless=False):
         with open(os.path.join(export_folder, search_term, 'ledger.json'), 'w') as outfile:
             json.dump(ledger, outfile)
 
-    return f'saved {len(ledger)} images to {export_folder}'
+    return f'{search_term}: saved {len(ledger)} images to {export_folder}'
 
 parser = argparse.ArgumentParser(description='xDescription of your program')
 parser.add_argument('-c','--cat_file', help='path to categories', required=True)
@@ -79,4 +79,5 @@ export = args['export']
 headless = False if args['headless'] == None else True
 
 for cat in cats:
-    items = get_images(cat, limit, export, headless)
+    result = get_images(cat, limit, export, headless)
+    print(result)
