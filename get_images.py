@@ -1,6 +1,7 @@
 import time
 import os
 import json
+import argparse
 
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
@@ -15,7 +16,7 @@ def get_images(search_term, limit, export_folder, headless=False):
         options.headless = False
 
     browser = webdriver.Firefox(options=options, executable_path=r'geckodriver/geckodriver')
-    base_url = f"https://www.google.com/search?site=&tbm=isch&source=hp&biw=1873&bih=990&q={search_term}"
+    base_url = f"https://www.google.de/search?site=&tbm=isch&source=hp&biw=1873&bih=990&q={search_term}"
 
     # go to url
     browser.get(base_url)
@@ -48,7 +49,7 @@ def get_images(search_term, limit, export_folder, headless=False):
                 continue
 
             if reponse.status_code == 200:
-                os.makedirs(os.path.join(export_folder + search_term), exist_ok=True)
+                os.makedirs(os.path.join(export_folder, search_term), exist_ok=True)
                 export_path = os.path.join(export_folder, search_term,  f"{search_term}{cnt}.jpg") 
                 with open(export_path,"wb") as file:
                     file.write(reponse.content)
@@ -57,9 +58,25 @@ def get_images(search_term, limit, export_folder, headless=False):
         else:
             break
 
-        with open(os.path.join(export_folder, 'ledger.json'), 'w') as outfile:
+        with open(os.path.join(export_folder, search_term, 'ledger.json'), 'w') as outfile:
             json.dump(ledger, outfile)
 
     return f'saved {len(ledger)} images to {export_folder}'
 
-items = get_images('codiaeum petra', 3, '/opt/pjs/data/train/', headless=True)
+parser = argparse.ArgumentParser(description='xDescription of your program')
+parser.add_argument('-c','--cat_file', help='path to categories', required=True)
+parser.add_argument('-l','--limit', help='how many images should be scraped per category?', required=True)
+parser.add_argument('-e','--export', help='export folder path', required=True)
+parser.add_argument('--headless', help='should browser be headless?', required=False)
+args = vars(parser.parse_args())
+
+cat_file = args['cat_file']
+with open(cat_file, 'r') as infile:
+    cats = infile.read().splitlines()
+
+limit = int(args['limit'])
+export = args['export']
+headless = False if args['headless'] == None else True
+
+for cat in cats:
+    items = get_images(cat, limit, export, headless)
